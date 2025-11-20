@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evoastra Image Captioning</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #1f2937, #0f172a);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #22c55e;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 380px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label {
+      display: inline-block;
+      background: #22c55e;
+      padding: 12px 25px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.3s ease;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    label:hover {
+      background: #16a34a;
+    }
+
+    img {
+      width: 100%;
+      max-height: 250px;
+      border-radius: 10px;
+      margin-top: 10px;
+      object-fit: cover;
+      display: none;
+    }
+
+    #caption {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      min-height: 30px;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #fff;
+      border-top: 3px solid #22c55e;
+      border-radius: 50%;
+      margin: 10px auto;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Image Captioning System</h1>
+
+  <div class="container">
+    <label for="fileInput">Upload Image</label>
+    <input type="file" id="fileInput" accept="image/*" />
+    <img id="preview" src="" alt="Preview" />
+
+    <div id="caption"></div>
+  </div>
+
+  <footer>© 2025 Evoastra Internship Project</footer>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const captionDiv = document.getElementById("caption");
+    const previewImg = document.getElementById("preview");
+
+    let API_URL = null;
+    const ports = [8080, 8000];
+
+    // --------------------------------
+    //  Detect Backend (Fixed Version)
+    // --------------------------------
+    async function detectBackend() {
+      captionDiv.innerHTML = "⏳ Checking backend connection...";
+
+      for (const port of ports) {
+        try {
+          const res = await fetch(`http://127.0.0.1:${port}/`, { method: "GET" });
+
+          if (res.ok) {
+            API_URL = `http://127.0.0.1:${port}/caption`;
+            captionDiv.innerHTML = "✅ Backend connected!";
+            console.log("Connected to backend on port", port);
+            return;
+          }
+        } catch (e) {
+          console.log(`Backend not found on port ${port}`);
+        }
+      }
+
+      captionDiv.innerHTML = "❌ No backend detected. Please start FastAPI.";
+      console.log("No backend detected");
+    }
+
+    detectBackend();
+
+    // --------------------------------
+    //  Handle Image Upload
+    // --------------------------------
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!API_URL) {
+        captionDiv.innerHTML = "❌ No backend detected. Start FastAPI server.";
+        return;
+      }
+
+      // Preview image
+      const reader = new FileReader();
+      reader.onload = () => {
+        previewImg.src = reader.result;
+        previewImg.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+
+      // Show spinner
+      captionDiv.innerHTML = `
+        <div class="spinner"></div>
+        <div class="loading">Generating caption...</div>
+      `;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("Failed to get caption");
+
+        const result = await response.json();
+
+        captionDiv.innerHTML = `<strong>${result.caption}</strong> <br> 
+                                ⭐ BLEU Score: ${result.bleu}`;
+      } catch (err) {
+        captionDiv.innerHTML = "❌ Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

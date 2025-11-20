@@ -1,0 +1,32 @@
+# Ignore dataset folders
+data/
+datasets/
+coco/
+COCO/
+*/data/*
+*/coco/*
+
+# Ignore HuggingFace cache
+hf_cache/
+E:/hf_cache/
+*.bin
+*.safetensors
+*.pth
+
+# Ignore virtual environment
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Ignore large model files
+models/
+checkpoints/
+*.zip
+*.tar
+*.tar.gz
+
+# Ignore temp files
+*.log
+*.tmp
+tmp/
