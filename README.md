@@ -1,4 +1,4 @@
-#  Evoastra Image Captioning System
+# Image Captioning System
 
 ### **AI-powered Image Caption Generator using BLIP + FastAPI + HTML/JS UI**
 
@@ -163,6 +163,7 @@ Future Scope
 * Cloud deployment (Render, HuggingFace Spaces)
 * Mobile app integration
 * Voice-based caption reading
+
 
 
 
